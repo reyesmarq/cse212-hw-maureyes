@@ -21,8 +21,22 @@ public static class SetsAndMaps
     /// <param name="words">An array of 2-character words (lowercase, no duplicates)</param>
     public static string[] FindPairs(string[] words)
     {
-        // TODO Problem 1 - ADD YOUR CODE HERE
-        return [];
+        var seen = new HashSet<int>();
+        var pairs = new List<string>();
+
+        foreach (var word in words)
+        {
+            char a = word[0], b = word[1];
+            if (a == b)
+                continue;
+
+            if (seen.Contains(b << 16 | a))
+                pairs.Add($"{word} & {b}{a}");
+            else
+                seen.Add(a << 16 | b);
+        }
+
+        return pairs.ToArray();
     }
 
     /// <summary>
@@ -42,7 +56,8 @@ public static class SetsAndMaps
         foreach (var line in File.ReadLines(filename))
         {
             var fields = line.Split(",");
-            // TODO Problem 2 - ADD YOUR CODE HERE
+            var degree = fields[3].Trim();
+            degrees[degree] = degrees.GetValueOrDefault(degree) + 1;
         }
 
         return degrees;
@@ -66,8 +81,31 @@ public static class SetsAndMaps
     /// </summary>
     public static bool IsAnagram(string word1, string word2)
     {
-        // TODO Problem 3 - ADD YOUR CODE HERE
-        return false;
+        var counts = new Dictionary<char, int>();
+
+        foreach (var c in word1)
+        {
+            if (c == ' ')
+                continue;
+            var lower = char.ToLower(c);
+            counts[lower] = counts.GetValueOrDefault(lower) + 1;
+        }
+
+        foreach (var c in word2)
+        {
+            if (c == ' ')
+                continue;
+            var lower = char.ToLower(c);
+            if (!counts.TryGetValue(lower, out var count))
+                return false;
+
+            if (count == 1)
+                counts.Remove(lower);
+            else
+                counts[lower] = count - 1;
+        }
+
+        return counts.Count == 0;
     }
 
     /// <summary>
@@ -96,11 +134,8 @@ public static class SetsAndMaps
 
         var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(json, options);
 
-        // TODO Problem 5:
-        // 1. Add code in FeatureCollection.cs to describe the JSON using classes and properties 
-        // on those classes so that the call to Deserialize above works properly.
-        // 2. Add code below to create a string out each place a earthquake has happened today and its magitude.
-        // 3. Return an array of these string descriptions.
-        return [];
+        return featureCollection!.Features
+            .Select(feature => $"{feature.Properties.Place} - Mag {feature.Properties.Mag}")
+            .ToArray();
     }
 }
